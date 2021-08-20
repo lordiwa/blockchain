@@ -1,2 +1,1 @@
-# blockchain
-Blockchain tests
+# Tutorial about Blockchain Development from scratch
