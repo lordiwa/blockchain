@@ -1,25 +1,8 @@
-interface TransactionData {
-    from: string;
-    to: string;
-    amount: number;
-}
+import sha256 = require('js-sha256');
 
-interface BlockData {
-    index: number;
-    hash: string;
-    previousHash: string;
-    nonce: number;
-    transactions: TransactionData[];
-    key: string;
-}
+import Block from './block';
 
-interface BlockChainData {
-    blocks: BlockData[];
-    // genesisBlock: BlockData;
-    addBlock(block: BlockData): void;
-    // getNextBlock(transactions: TransactionData[]): BlockData;
-    generateHash(block: BlockData): string;
-}
+import {BlockChainData, BlockData, TransactionData} from "./types/class";
 
 export default class Blockchain implements BlockChainData {
     public blocks: BlockData[];
@@ -31,7 +14,7 @@ export default class Blockchain implements BlockChainData {
     }
 
     public addBlock(block: BlockData): void {
-        // if genesis block or first block
+        // if genesis block
         if (this.blocks.length === 0) {
             block.previousHash = "0000000000";
             block.hash = this.generateHash(block);
@@ -39,7 +22,37 @@ export default class Blockchain implements BlockChainData {
         this.blocks = [...this.blocks, block];
     }
 
+    public getPreviousBlock(): BlockData {
+        return this.blocks[this.blocks.length - 1];
+    }
+
+    public getNextBlock(transactions: TransactionData[]) {
+        let block = new Block();
+
+        transactions.map(function(t: TransactionData) {
+            block.addTransaction(t);
+        })
+
+        let previousBlock = this.getPreviousBlock();
+        block.index = this.blocks.length;
+        block.previousHash = previousBlock.hash;
+        block.hash = this.generateHash(block);
+
+        return block;
+
+    }
+
     public generateHash(block: BlockData) {
-        return '';
+
+        let hash = sha256(block.key);
+
+        // mining
+        while(!hash.startsWith('7a7')) {
+            block.nonce += 1;
+            hash = sha256(block.key);
+            console.log(hash);
+        }
+
+        return hash;
     }
 }
